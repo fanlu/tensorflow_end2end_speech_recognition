@@ -112,9 +112,12 @@ class DatasetBase(Base):
         input_list = np.array(list(
             map(lambda path: np.load(path),
                 np.take(self.input_paths, data_indices, axis=0))))
-        label_list = np.array(list(
-            map(lambda path: np.load(path),
-                np.take(self.label_paths, data_indices, axis=0))))
+        # label_list = np.array(list(
+        #     map(lambda path: np.load(path),
+        #         np.take(self.label_paths, data_indices, axis=0))))
+        import pdb
+        pdb.set_trace()
+        label_list = np.array(list([self.label_dict.get(i) for i in np.take(self.input_paths, data_indices, axis=0)]))
 
         if not hasattr(self, 'input_size'):
             self.input_size = input_list[0].shape[1]

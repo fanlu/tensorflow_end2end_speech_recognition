@@ -103,6 +103,11 @@ class Dataset(DatasetBase):
             # ex.) utt_name: speaker-book-utt_index
             input_paths.append(join(input_path, speaker, utt_name + '.npy'))
             label_paths.append(join(label_path, speaker, utt_name + '.npy'))
+        label_dict = dict()
+        with open(label_path+".csv") as f:
+            for i, line in enumerate(f.readlines()):
+                label_dict[line.split(",")[2]] = np.array(line.split(",")[3].split())
+        self.label_dict = label_dict
         self.input_paths = np.array(input_paths)
         self.label_paths = np.array(label_paths)
         # NOTE: Not load dataset yet
