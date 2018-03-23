@@ -16,8 +16,8 @@ import yaml
 import shutil
 
 sys.path.append(abspath('../../../'))
-from experiments.librispeech.data.load_dataset_ctc import Dataset
-from experiments.librispeech.metrics.ctc import do_eval_cer, do_eval_wer
+from examples.librispeech.data.load_dataset_ctc import Dataset
+from examples.librispeech.metrics.ctc import do_eval_cer, do_eval_wer
 from utils.io.labels.sparsetensor import list2sparsetensor
 from utils.training.learning_rate_controller import Controller
 from utils.training.plot import plot_loss, plot_ler
@@ -34,6 +34,9 @@ def do_train(model, params, gpu_indices):
         params (dict): A dictionary of parameters
         gpu_indices (list): GPU indices
     """
+    import pdb
+    pdb.set_trace()
+    print(params['train_data_size'])
     # Load dataset
     train_data = Dataset(
         data_type='train', train_data_size=params['train_data_size'],
@@ -459,14 +462,14 @@ def main(config_path, model_save_path, gpu_indices):
     if params['label_type'] == 'character':
         params['num_classes'] = 28
     elif params['label_type'] == 'character_capital_divide':
-        if params['train_data_size'] == 'train100h':
+        if params['train_data_size'] == '100h':
             params['num_classes'] = 72
         elif params['train_data_size'] == 'train460h':
             params['num_classes'] = 77
         elif params['train_data_size'] == 'train960h':
             params['num_classes'] = 77
     elif params['label_type'] == 'word_freq10':
-        if params['train_data_size'] == 'train100h':
+        if params['train_data_size'] == '100h':
             params['num_classes'] = 7213
         elif params['train_data_size'] == 'train460h':
             params['num_classes'] = 18641
@@ -536,13 +539,12 @@ def main(config_path, model_save_path, gpu_indices):
     # Save config file
     shutil.copyfile(config_path, join(model.save_path, 'config.yml'))
 
-    sys.stdout = open(join(model.save_path, 'train.log'), 'w')
+    #sys.stdout = open(join(model.save_path, 'train.log'), 'w')
     # TODO(hirofumi): change to logger
     do_train(model=model, params=params, gpu_indices=gpu_indices)
 
 
 if __name__ == '__main__':
-
     args = sys.argv
     if len(args) != 3 and len(args) != 4:
         raise ValueError

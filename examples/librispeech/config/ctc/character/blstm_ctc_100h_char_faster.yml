@@ -2,7 +2,7 @@ param:
   # corpus
   corpus: librispeech
   label_type: character
-  train_data_size: train100h
+  train_data_size: 100h
 
   # features
   feature: fbank

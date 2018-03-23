@@ -8,7 +8,7 @@
 
 from __future__ import absolute_import
 from __future__ import division
-from __future__ import print_function
+#from __future__ import print_function
 
 from os.path import join, isfile
 import pickle
@@ -63,20 +63,23 @@ class Dataset(DatasetBase):
 
         self.is_test = True if 'test' in data_type else False
         self.padded_value = -1 if not self.is_test else None
-
+        
         # paths where datasets exist
-        dataset_root = ['/data/inaguma/librispeech',
-                        '/n/sd8/inaguma/corpus/librispeech/dataset']
-
-        input_path = join(dataset_root[0], 'inputs',
+        dataset_root = ['/mnt/cephfs/asr/LibriSpeech/',
+                        '/mnt/cephfs/asr/LibriSpeech/dataset']
+        print("------------------------")
+        print(train_data_size, data_type)
+        input_path = join(dataset_root[0], 'feature/numpy',
                           train_data_size, data_type)
+        print(input_path)
         # NOTE: ex.) save_path:
         # librispeech_dataset_path/inputs/train_data_size/data_type/speaker/***.npy
-        label_path = join(dataset_root[0], 'labels',
+        label_path = join(dataset_root[0], 'dataset/numpy',
                           train_data_size, data_type, label_type)
         # NOTE: ex.) save_path:
         # librispeech_dataset_path/labels/train_data_size/data_type/label_type/speaker/***.npy
-
+        import pdb
+        pdb.set_trace()
         # Load the frame number dictionary
         if isfile(join(input_path, 'frame_num.pickle')):
             with open(join(input_path, 'frame_num.pickle'), 'rb') as f:

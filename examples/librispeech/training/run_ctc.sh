@@ -1,6 +1,8 @@
 #!/bin/bash
+set -x
 
-MODEL_SAVE_PATH="/n/sd8/inaguma/result/tensorflow/librispeech"
+#MODEL_SAVE_PATH="/n/sd8/inaguma/result/tensorflow/librispeech"
+MODEL_SAVE_PATH="/mnt/cephfs/asr/fanlu/librispeech_train"
 
 # Select GPU
 if [ $# -lt 2 ]; then
@@ -14,7 +16,8 @@ export PATH=$PATH:/usr/local/cuda-8.0/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-8.0/lib64:/usr/local/cuda-8.0/extras/CUPTI/lib64
 
 # Set path to python
-PYTHON=/home/lab5/inaguma/.pyenv/versions/anaconda3-4.1.1/bin/python
+#PYTHON=/home/lab5/inaguma/.pyenv/versions/anaconda3-4.1.1/bin/python
+PYTHON=/mnt/cephfs/asr/anaconda3/envs/py2/bin/python
 
 gpu_num=`expr $# - 1`
 config_path=$1
@@ -33,9 +36,9 @@ fi
 mkdir -p log
 
 # Background job version
-CUDA_VISIBLE_DEVICES=$gpu_index nohup $PYTHON train_ctc.py \
-  $config_path $MODEL_SAVE_PATH $gpu_index > log/$filename".log" &
+#CUDA_VISIBLE_DEVICES=$gpu_index nohup $PYTHON train_ctc.py \
+#  $config_path $MODEL_SAVE_PATH $gpu_index > log/$filename".log" &
 
 # Standard output version
-# CUDA_VISIBLE_DEVICES=$gpu_index $PYTHON train_ctc.py \
-#   $config_path $MODEL_SAVE_PATH $gpu_index
+CUDA_VISIBLE_DEVICES=$gpu_index $PYTHON train_ctc.py \
+  $config_path $MODEL_SAVE_PATH $gpu_index
