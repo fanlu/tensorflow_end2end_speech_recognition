@@ -105,7 +105,7 @@ class Dataset(DatasetBase):
         label_dict = dict()
         with open(label_path+".csv") as f:
             for i, line in enumerate(f.readlines()):
-                label_dict[line.split(",")[2].replace("//", "/")] = np.array(line.split(",")[3].split())
+                label_dict[line.split(",")[2].replace("//", "/")] = np.array(map(int, line.split(",")[3].split()))
         self.label_dict = label_dict
         self.input_paths = np.array(input_paths)
         self.label_paths = np.array(label_paths)
