@@ -37,7 +37,7 @@ def stack_frame(input_list, num_stack, num_skip, progressbar=False):
     for i_batch in wrap_iterator(range(batch_size), progressbar):
 
         frame_num, input_size = input_list[i_batch].shape
-        frame_num_new = math.ceil(frame_num / num_skip)
+        frame_num_new = int(math.ceil(frame_num / num_skip))
 
         stacked_frames = np.zeros((frame_num_new, input_size * num_stack))
         stack_count = 0  # counter

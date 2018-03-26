@@ -65,7 +65,7 @@ class Dataset(DatasetBase):
         self.padded_value = -1 if not self.is_test else None
         
         # paths where datasets exist
-        dataset_root = ['/mnt/cephfs/asr/LibriSpeech/',
+        dataset_root = ['/Users/fanlu/Documents/librispeech/',
                         '/mnt/cephfs/asr/LibriSpeech/dataset']
         print("------------------------")
         print(train_data_size, data_type)
@@ -105,7 +105,12 @@ class Dataset(DatasetBase):
         label_dict = dict()
         with open(label_path+".csv") as f:
             for i, line in enumerate(f.readlines()):
-                label_dict[line.split(",")[2].replace("//", "/")] = np.array([int(i) for i in line.split(",")[3].split()])
+                if i == 0:
+                    continue
+                try:
+                    label_dict[line.split(",")[2].replace("//", "/")] = np.array([int(i) for i in line.split(",")[3].split()])
+                except:
+                    print(line)
         self.label_dict = label_dict
         self.input_paths = np.array(input_paths)
         self.label_paths = np.array(label_paths)

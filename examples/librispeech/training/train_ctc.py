@@ -34,8 +34,8 @@ def do_train(model, params, gpu_indices):
         params (dict): A dictionary of parameters
         gpu_indices (list): GPU indices
     """
-    import pdb
-    pdb.set_trace()
+    # import pdb
+    # pdb.set_trace()
     print(params['train_data_size'])
     # Load dataset
     train_data = Dataset(
