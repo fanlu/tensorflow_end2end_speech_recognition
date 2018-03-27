@@ -1,4 +1,5 @@
 param:
+  dataset_root: ['/Users/fanlu/Documents/librispeech']
   # corpus
   corpus: librispeech
   label_type_main: word_freq10

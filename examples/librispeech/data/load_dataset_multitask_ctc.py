@@ -24,7 +24,7 @@ class Dataset(DatasetBase):
                  max_epoch=None, splice=1,
                  num_stack=1, num_skip=1,
                  shuffle=False, sort_utt=False, sort_stop_epoch=None,
-                 progressbar=False, num_gpu=1, is_gpu=False):
+                 progressbar=False, num_gpu=1, is_gpu=False, dataset_root=[]):
         """A class for loading dataset.
         Args:
             data_type (stirng): train or dev_clean or dev_other or
@@ -70,8 +70,8 @@ class Dataset(DatasetBase):
         self.padded_value = -1 if not self.is_test else None
 
         # paths where datasets exist
-        dataset_root = ['/data/inaguma/librispeech',
-                        '/n/sd8/inaguma/corpus/librispeech/dataset']
+        # dataset_root = ['/data/inaguma/librispeech',
+        #                 '/n/sd8/inaguma/corpus/librispeech/dataset']
 
         input_path = join(dataset_root[0], 'inputs',
                           train_data_size, data_type)

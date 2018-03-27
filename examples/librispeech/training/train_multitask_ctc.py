@@ -16,8 +16,8 @@ import yaml
 import shutil
 
 sys.path.append(abspath('../../../'))
-from experiments.librispeech.data.load_dataset_multitask_ctc import Dataset
-from experiments.librispeech.metrics.ctc import do_eval_cer, do_eval_wer
+from examples.librispeech.data.load_dataset_multitask_ctc import Dataset
+from examples.librispeech.metrics.ctc import do_eval_cer, do_eval_wer
 from utils.io.labels.sparsetensor import list2sparsetensor
 from utils.training.learning_rate_controller import Controller
 from utils.training.plot import plot_loss, plot_ler
@@ -35,6 +35,7 @@ def do_train(model, params, gpu_indices):
         gpu_indices (list): GPU indices
     """
     # Load dataset
+    dataset_root = params.get("dataset_root")
     train_data = Dataset(
         data_type='train', train_data_size=params['train_data_size'],
         label_type_main=params['label_type_main'],
@@ -43,33 +44,33 @@ def do_train(model, params, gpu_indices):
         splice=params['splice'],
         num_stack=params['num_stack'], num_skip=params['num_skip'],
         sort_utt=True, sort_stop_epoch=params['sort_stop_epoch'],
-        num_gpu=len(gpu_indices))
+        num_gpu=len(gpu_indices), dataset_root=params['dataset_root'])
     dev_clean_data = Dataset(
         data_type='dev_clean', train_data_size=params['train_data_size'],
         label_type_main=params['label_type_main'],
         label_type_sub=params['label_type_sub'],
         batch_size=params['batch_size'], splice=params['splice'],
         num_stack=params['num_stack'], num_skip=params['num_skip'],
-        shuffle=True, num_gpu=len(gpu_indices))
+        shuffle=True, num_gpu=len(gpu_indices), dataset_root=params['dataset_root'])
     dev_other_data = Dataset(
         data_type='dev_other', train_data_size=params['train_data_size'],
         label_type_main=params['label_type_main'],
         label_type_sub=params['label_type_sub'],
         batch_size=params['batch_size'], splice=params['splice'],
         num_stack=params['num_stack'], num_skip=params['num_skip'],
-        shuffle=True, num_gpu=len(gpu_indices))
+        shuffle=True, num_gpu=len(gpu_indices), dataset_root=params['dataset_root'])
     test_clean_data = Dataset(
         data_type='test_clean', train_data_size=params['train_data_size'],
         label_type=params['label_type'],
         batch_size=params['batch_size'], splice=params['splice'],
         num_stack=params['num_stack'], num_skip=params['num_skip'],
-        shuffle=True)
+        shuffle=True, dataset_root=params['dataset_root'])
     test_other_data = Dataset(
         data_type='test_other', train_data_size=params['train_data_size'],
         label_type=params['label_type'],
         batch_size=params['batch_size'], splice=params['splice'],
         num_stack=params['num_stack'], num_skip=params['num_skip'],
-        shuffle=True)
+        shuffle=True, dataset_root=params['dataset_root'])
 
     # Tell TensorFlow that the model will be built into the default graph
     with tf.Graph().as_default(), tf.device('/cpu:0'):
@@ -528,7 +529,7 @@ def main(config_path, model_save_path, gpu_indices):
     # Save config file
     shutil.copyfile(config_path, join(model.save_path, 'config.yml'))
 
-    sys.stdout = open(join(model.save_path, 'train.log'), 'w')
+    # sys.stdout = open(join(model.save_path, 'train.log'), 'w')
     # TODO(hirofumi): change to logger
     do_train(model=model, params=params, gpu_indices=gpu_indices)
 
