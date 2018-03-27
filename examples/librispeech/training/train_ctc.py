@@ -327,34 +327,34 @@ def do_train(model, params, gpu_indices):
                                     sess, checkpoint_file, global_step=train_data.epoch)
                                 print("Model saved in file: %s" % save_path)
 
-                                print('=== Test Data Evaluation ===')
+                                # print('=== Test Data Evaluation ===')
                                 # test-clean
-                                cer_test_clean_epoch, wer_test_clean_epoch = do_eval_cer(
-                                    session=sess,
-                                    decode_ops=decode_ops,
-                                    model=model,
-                                    dataset=test_clean_data,
-                                    label_type=params['label_type'],
-                                    is_test=True,
-                                    eval_batch_size=1)
-                                print('  CER (clean): %f %%' %
-                                      (cer_test_clean_epoch * 100))
-                                print('  WER (clean): %f %%' %
-                                      (wer_test_clean_epoch * 100))
-
-                                # test-other
-                                cer_test_other_epoch, wer_test_other_epoch = do_eval_cer(
-                                    session=sess,
-                                    decode_ops=decode_ops,
-                                    model=model,
-                                    dataset=test_other_data,
-                                    label_type=params['label_type'],
-                                    is_test=True,
-                                    eval_batch_size=1)
-                                print('  CER (other): %f %%' %
-                                      (cer_test_other_epoch * 100))
-                                print('  WER (other): %f %%' %
-                                      (wer_test_other_epoch * 100))
+                                # cer_test_clean_epoch, wer_test_clean_epoch = do_eval_cer(
+                                #     session=sess,
+                                #     decode_ops=decode_ops,
+                                #     model=model,
+                                #     dataset=test_clean_data,
+                                #     label_type=params['label_type'],
+                                #     is_test=True,
+                                #     eval_batch_size=1)
+                                # print('  CER (clean): %f %%' %
+                                #       (cer_test_clean_epoch * 100))
+                                # print('  WER (clean): %f %%' %
+                                #       (wer_test_clean_epoch * 100))
+                                #
+                                # # test-other
+                                # cer_test_other_epoch, wer_test_other_epoch = do_eval_cer(
+                                #     session=sess,
+                                #     decode_ops=decode_ops,
+                                #     model=model,
+                                #     dataset=test_other_data,
+                                #     label_type=params['label_type'],
+                                #     is_test=True,
+                                #     eval_batch_size=1)
+                                # print('  CER (other): %f %%' %
+                                #       (cer_test_other_epoch * 100))
+                                # print('  WER (other): %f %%' %
+                                #       (wer_test_other_epoch * 100))
                             else:
                                 not_improved_epoch += 1
 
@@ -401,28 +401,28 @@ def do_train(model, params, gpu_indices):
 
                                 print('=== Test Data Evaluation ===')
                                 # test-clean
-                                cer_test_clean_epoch = do_eval_wer(
-                                    session=sess,
-                                    decode_ops=decode_ops,
-                                    model=model,
-                                    dataset=test_clean_data,
-                                    train_data_size=params['train_data_size'],
-                                    is_test=True,
-                                    eval_batch_size=1)
-                                print('  WER (clean): %f %%' %
-                                      (cer_test_clean_epoch * 100))
-
-                                # test-other
-                                ler_test_other_epoch = do_eval_wer(
-                                    session=sess,
-                                    decode_ops=decode_ops,
-                                    model=model,
-                                    dataset=test_other_data,
-                                    train_data_size=params['train_data_size'],
-                                    is_test=True,
-                                    eval_batch_size=1)
-                                print('  WER (other): %f %%' %
-                                      (ler_test_other_epoch * 100))
+                                # cer_test_clean_epoch = do_eval_wer(
+                                #     session=sess,
+                                #     decode_ops=decode_ops,
+                                #     model=model,
+                                #     dataset=test_clean_data,
+                                #     train_data_size=params['train_data_size'],
+                                #     is_test=True,
+                                #     eval_batch_size=1)
+                                # print('  WER (clean): %f %%' %
+                                #       (cer_test_clean_epoch * 100))
+                                #
+                                # # test-other
+                                # ler_test_other_epoch = do_eval_wer(
+                                #     session=sess,
+                                #     decode_ops=decode_ops,
+                                #     model=model,
+                                #     dataset=test_other_data,
+                                #     train_data_size=params['train_data_size'],
+                                #     is_test=True,
+                                #     eval_batch_size=1)
+                                # print('  WER (other): %f %%' %
+                                #       (ler_test_other_epoch * 100))
                             else:
                                 not_improved_epoch += 1
 
