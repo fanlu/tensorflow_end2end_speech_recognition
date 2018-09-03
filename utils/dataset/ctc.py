@@ -17,6 +17,20 @@ import numpy as np
 from utils.dataset.base import Base
 from utils.io.inputs.frame_stacking import stack_frame
 from utils.io.inputs.splicing import do_splice
+import soundfile
+from python_speech_features import fbank, delta
+
+def fbank_from_file(wav_path):
+    sig1, sr1 = soundfile.read(wav_path, dtype='float32')
+    fbank_feat, energy = fbank(sig1, sr1, nfilt=40)  # (407, 40)
+    # fbank_feat = np.column_stack(
+    #     (np.log(energy), np.log(fbank_feat)))  # (407, 41)
+    d_fbank_feat = delta(fbank_feat, 2)
+    dd_fbank_feat = delta(d_fbank_feat, 2)
+    # concat_fbank_feat = np.array(
+    #     [fbank_feat, d_fbank_feat, dd_fbank_feat], dtype=np.float32)  # (3, 407, 41)
+    # return concat_fbank_feat
+    return np.column_stack((np.log(fbank_feat), d_fbank_feat, dd_fbank_feat))
 
 
 class DatasetBase(Base):
@@ -28,6 +42,10 @@ class DatasetBase(Base):
         input_i = np.array(self.input_paths[index])
         label_i = np.array(self.label_paths[index])
         return (input_i, label_i)
+
+    def text_2_indices(self, text):
+        return [self.label_dict.get(i) for i in text.strip().split()]
+
 
     def __next__(self, batch_size=None):
         """Generate each mini-batch.
@@ -45,6 +63,7 @@ class DatasetBase(Base):
                     `[num_gpu, B]`
             is_new_epoch (bool): If true, 1 epoch is finished
         """
+        import pdb;pdb.set_trace()
         if self.max_epoch is not None and self.epoch >= self.max_epoch:
             raise StopIteration
         # NOTE: max_epoch = None means infinite loop
@@ -107,17 +126,20 @@ class DatasetBase(Base):
                 self.reset()
                 self.is_new_epoch = True
                 self.epoch += 1
-
+        
         # Load dataset in mini-batch
-        input_list = np.array(list(
-            map(lambda path: np.load(path),
-                np.take(self.input_paths, data_indices, axis=0))))
-        # label_list = np.array(list(
+        # input_list = np.array(list(
         #     map(lambda path: np.load(path),
-        #         np.take(self.label_paths, data_indices, axis=0))))
+        #         np.take(self.input_paths, data_indices, axis=0))))
+        input_list = np.array(list(
+            map(lambda path: fbank_from_file(path),
+                np.take(self.input_paths, data_indices, axis=0))))
+        label_list = np.array(list(
+            map(lambda text: self.text_2_indices(text),
+                np.take(self.target_labels, data_indices, axis=0))))
         # import pdb
         # pdb.set_trace()
-        label_list = np.array(list([self.label_dict.get(i) for i in np.take(self.input_paths, data_indices, axis=0)]))
+        # label_list = np.array(list([self.label_dict.get(i) for i in np.take(self.target_labels, data_indices, axis=0)]))
 
         if not hasattr(self, 'input_size'):
             self.input_size = input_list[0].shape[1]
@@ -146,7 +168,7 @@ class DatasetBase(Base):
         input_names = list(
             map(lambda path: basename(path).split('.')[0],
                 np.take(self.input_paths, data_indices, axis=0)))
-
+        import pdb;pdb.set_trace()
         # Set values of each data in mini-batch
         for i_batch in range(len(data_indices)):
             data_i = input_list[i_batch]
@@ -154,10 +176,10 @@ class DatasetBase(Base):
 
             # Splicing
             data_i = data_i.reshape(1, frame_num, input_size)
-            data_i = do_splice(data_i,
-                               splice=self.splice,
-                               batch_size=1,
-                               num_stack=self.num_stack)
+            # data_i = do_splice(data_i,
+            #                    splice=self.splice,
+            #                    batch_size=1,
+            #                    num_stack=self.num_stack)
             data_i = data_i.reshape(frame_num, -1)
 
             inputs[i_batch, :frame_num, :] = data_i
