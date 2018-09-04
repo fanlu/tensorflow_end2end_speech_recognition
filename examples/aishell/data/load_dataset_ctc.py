@@ -18,11 +18,11 @@ import json
 import concurrent.futures
 from multiprocessing import cpu_count
 from utils.dataset.ctc import DatasetBase
-from utils.util import mkdir_join
-from utils.util import read_manifest
-from utils.inputs.htk import read, write
-from utils.inputs.wav2feature_python_speech_features import wav2feature as w2f_psf
-from utils.inputs.wav2feature_librosa import wav2feature as w2f_librosa
+#from utils.util import mkdir_join
+#from utils.util import read_manifest
+#from utils.inputs.htk import read, write
+#from utils.inputs.wav2feature_python_speech_features import wav2feature as w2f_psf
+#from utils.inputs.wav2feature_librosa import wav2feature as w2f_librosa
 
 
 class Dataset(DatasetBase):
@@ -79,15 +79,14 @@ class Dataset(DatasetBase):
         self.target_labels = []
         self.durations = []
         self.label_dict = {}
-        for i in open("/Users/fanlu/Downloads/aishell_train.json").readlines():
+        for i in open(json_file_path).readlines():
             dic = json.loads(i)
             self.input_paths.append(dic.get("key"))
             self.target_labels.append(dic.get("text"))
             self.durations.append(dic.get("duration"))
-        import pdb;pdb.set_trace()
-        for j in open("/Users/fanlu/Downloads/aishell_label_dict.txt").readlines():
+        for j in open("/mnt/cephfs2/asr/users/fanlu/data/aishell_label_dict.txt").readlines():
             self.label_dict = {v: k for k, v in enumerate(j.strip().split())}
-        
+
         self.rest = set(range(0, len(self.input_paths), 1))
 
 
@@ -99,7 +98,7 @@ class Dataset(DatasetBase):
             feat_squared = np.zeros((1, feat_dim))
             count = 0
             future_to_f = {
-                executor.submit(w2f_psf, f): f for f in
+                executor.submit(None, f): f for f in
                 self.input_paths}
             for future in concurrent.futures.as_completed(future_to_f):
                 # for f, data in zip(audio_paths, executor.map(spectrogram_from_file, audio_paths, overwrite=overwrite, noise_percent=noise_percent)):
@@ -131,7 +130,7 @@ class Dataset(DatasetBase):
 
     def _compute_mean_std(self, manifest_path, featurize_func, num_samples):
         """Compute mean and std from randomly sampled instances."""
-        manifest = read_manifest(manifest_path)
+        manifest = "" # read_manifest(manifest_path)
         sampled_manifest = self._rng.sample(manifest, num_samples)
         features = []
         for instance in sampled_manifest:

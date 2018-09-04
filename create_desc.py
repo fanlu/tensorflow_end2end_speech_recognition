@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import wave
 import codecs
 
@@ -8,8 +9,30 @@ def get_duration_wave(w):
     audio.close()
     return duration
 
+def aishell_filter():
+    _data_path = "/mnt/cephfs2/asr/users/fanlu/data"
+    lines = open(_data_path + "/aishell_label_dict.txt").readlines()
+    for line in lines:
+        s = set(line.strip().split())
+    out_file = codecs.open(_data_path + "/aishell_validation2.json", 'w', encoding="utf-8")
+    out_file2 = codecs.open(_data_path + "/aishell_test2.json", 'w', encoding="utf-8")
+    for line in open(_data_path + "/aishell_validation.json").readlines():
+        dic = json.loads(line)
+        text = dic.get("text").split()
+        cc = False
+        for t in text:
+            if t not in s:
+                cc = True
+                break
+        if cc:
+            continue
+        else:
+            out_file.write(line)
+
+
+
 def ai_2_word():
-    _data_path="/Users/fanlu/Downloads/"
+    _data_path="/opt/cephfs1/asr/users/fanlu/data/"
     lines = open(_data_path + "data_aishell/transcript/aishell_transcript_v0.8.txt").readlines()
     out_file = codecs.open(_data_path + "/aishell_train.json", 'w', encoding="utf-8")
     out_file1 = codecs.open(_data_path + "/aishell_validation.json", 'w', encoding="utf-8")
@@ -19,7 +42,7 @@ def ai_2_word():
         # import pdb
         # pdb.set_trace()
         ps = generate_zi_label("".join(rs[1:]))
-        
+
         if rs[0][6:11] <= "S0723":
             wav = _data_path + "data_aishell/wav/train/" + rs[0][6:11] + "/" + rs[0] + ".wav"
             # dir = _data_path + "data_aishell/wav/train_aug/" + rs[0][6:11] + "/" + rs[0]
@@ -54,4 +77,5 @@ def generate_zi_label(label):
     return l
 
 if __name__ == "__main__":
-    ai_2_word()
+    #ai_2_word()
+    aishell_filter()

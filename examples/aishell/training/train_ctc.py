@@ -26,7 +26,6 @@ from utils.directory import mkdir_join, mkdir
 from utils.parameter import count_total_parameters
 from models.ctc.ctc import CTC
 import tensorflow as tf
-import json
 import collections
 import soundfile
 import numpy as np
@@ -164,8 +163,8 @@ def do_train(model, params, gpu_indices):
         params (dict): A dictionary of parameters
         gpu_indices (list): GPU indices
     """
-    # import pdb
-    # pdb.set_trace()
+    import pdb
+    pdb.set_trace()
     print(params['train_data_size'])
     # Load dataset
     train_data = Dataset(
@@ -176,14 +175,14 @@ def do_train(model, params, gpu_indices):
         num_stack=params['num_stack'], num_skip=params['num_skip'],
         sort_utt=True, sort_stop_epoch=params['sort_stop_epoch'],
         num_gpu=len(gpu_indices), dataset_root=params["dataset_root"],
-        json_file_path="", params=params)
+        json_file_path=params["train_json"], params=params)
     # Load dev dataset
     dev_data = Dataset(
         data_type='dev', train_data_size=params['train_data_size'],
         label_type=params['label_type'],
         batch_size=params['batch_size'], splice=params['splice'],
         num_stack=params['num_stack'], num_skip=params['num_skip'],
-        shuffle=True, num_gpu=len(gpu_indices))
+        shuffle=True, num_gpu=len(gpu_indices), json_file_path=params["dev_json"])
 
 
     # Tell TensorFlow that the model will be built into the default graph
@@ -298,8 +297,9 @@ def do_train(model, params, gpu_indices):
         # NOTE: Start running operations on the Graph. allow_soft_placement
         # must be set to True to build towers on GPU, as some of the ops do not
         # have GPU implementations.
-        with tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
-                                              log_device_placement=False)) as sess:
+        config=tf.ConfigProto(allow_soft_placement=True,log_device_placement=False)
+        config.gpu_options.allow_growth = True
+        with tf.Session(config=config) as sess:
 
             # Instantiate a SummaryWriter to output summaries and the graph
             summary_writer = tf.summary.FileWriter(
@@ -335,20 +335,15 @@ def do_train(model, params, gpu_indices):
                 sess.run(train_op, feed_dict=feed_dict_train)
 
                 if (step + 1) % int(params['print_step'] / len(gpu_indices)) == 0:
-
+                    import pdb;pdb.set_trace()
                     # Create feed dictionary for next mini batch (dev)
-                    if params['train_data_size'] in ['train100h', 'train460h']:
-                        inputs, labels, inputs_seq_len, _ = dev_clean_data.next()[
-                            0]
-                    else:
-                        inputs, labels, inputs_seq_len, _ = dev_other_data.next()[
-                            0]
+                    inputs, labels, inputs_seq_len, _ = dev_data.next()[0]
                     feed_dict_dev = {}
                     for i_gpu in range(len(gpu_indices)):
                         feed_dict_dev[model.inputs_pl_list[i_gpu]
                                       ] = inputs[i_gpu]
                         feed_dict_dev[model.labels_pl_list[i_gpu]] = list2sparsetensor(
-                            labels[i_gpu], padded_value=dev_clean_data.padded_value)
+                            labels[i_gpu], padded_value=dev_data.padded_value)
                         feed_dict_dev[model.inputs_seq_len_pl_list[i_gpu]
                                       ] = inputs_seq_len[i_gpu]
                         feed_dict_dev[model.keep_prob_pl_list[i_gpu]] = 1.0
@@ -404,7 +399,7 @@ def do_train(model, params, gpu_indices):
                                 session=sess,
                                 decode_ops=decode_ops,
                                 model=model,
-                                dataset=dev_clean_data,
+                                dataset=dev_data,
                                 label_type=params['label_type'],
                                 eval_batch_size=1)
                             print('  CER (clean): %f %%' %
@@ -412,23 +407,7 @@ def do_train(model, params, gpu_indices):
                             print('  WER (clean): %f %%' %
                                   (wer_dev_clean_epoch * 100))
 
-                            # dev-other
-                            cer_dev_other_epoch, wer_dev_other_epoch = do_eval_cer(
-                                session=sess,
-                                decode_ops=decode_ops,
-                                model=model,
-                                dataset=dev_other_data,
-                                label_type=params['label_type'],
-                                eval_batch_size=1)
-                            print('  CER (other): %f %%' %
-                                  (cer_dev_other_epoch * 100))
-                            print('  WER (other): %f %%' %
-                                  (wer_dev_other_epoch * 100))
-
-                            if params['train_data_size'] in ['train100h', 'train460h']:
-                                metric_epoch = cer_dev_clean_epoch
-                            else:
-                                metric_epoch = cer_dev_other_epoch
+                            metric_epoch = cer_dev_clean_epoch
 
                             if metric_epoch < ler_dev_best:
                                 ler_dev_best = metric_epoch
@@ -480,27 +459,13 @@ def do_train(model, params, gpu_indices):
                                 session=sess,
                                 decode_ops=decode_ops,
                                 model=model,
-                                dataset=dev_clean_data,
+                                dataset=dev_data,
                                 train_data_size=params['train_data_size'],
                                 eval_batch_size=1)
                             print('  WER (clean): %f %%' %
                                   (wer_dev_clean_epoch * 100))
 
-                            # dev-other
-                            wer_dev_other_epoch = do_eval_wer(
-                                session=sess,
-                                decode_ops=decode_ops,
-                                model=model,
-                                dataset=dev_other_data,
-                                train_data_size=params['train_data_size'],
-                                eval_batch_size=1)
-                            print('  WER (other): %f %%' %
-                                  (wer_dev_other_epoch * 100))
-
-                            if params['train_data_size'] in ['train100h', 'train460h']:
-                                metric_epoch = wer_dev_clean_epoch
-                            else:
-                                metric_epoch = wer_dev_other_epoch
+                            metric_epoch = wer_dev_clean_epoch
 
                             if metric_epoch < ler_dev_best:
                                 ler_dev_best = metric_epoch

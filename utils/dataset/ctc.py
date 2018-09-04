@@ -63,7 +63,7 @@ class DatasetBase(Base):
                     `[num_gpu, B]`
             is_new_epoch (bool): If true, 1 epoch is finished
         """
-        import pdb;pdb.set_trace()
+        #import pdb;pdb.set_trace()
         if self.max_epoch is not None and self.epoch >= self.max_epoch:
             raise StopIteration
         # NOTE: max_epoch = None means infinite loop
@@ -126,7 +126,7 @@ class DatasetBase(Base):
                 self.reset()
                 self.is_new_epoch = True
                 self.epoch += 1
-        
+
         # Load dataset in mini-batch
         # input_list = np.array(list(
         #     map(lambda path: np.load(path),
@@ -168,9 +168,10 @@ class DatasetBase(Base):
         input_names = list(
             map(lambda path: basename(path).split('.')[0],
                 np.take(self.input_paths, data_indices, axis=0)))
-        import pdb;pdb.set_trace()
+        #import pdb;pdb.set_trace()
         # Set values of each data in mini-batch
         for i_batch in range(len(data_indices)):
+            print(i_batch,input_names[i_batch])
             data_i = input_list[i_batch]
             frame_num, input_size = data_i.shape
 
