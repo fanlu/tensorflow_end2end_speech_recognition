@@ -164,7 +164,7 @@ def do_train(model, params, gpu_indices):
         gpu_indices (list): GPU indices
     """
     import pdb
-    pdb.set_trace()
+    # pdb.set_trace()
     print(params['train_data_size'])
     # Load dataset
     train_data = Dataset(
@@ -175,14 +175,16 @@ def do_train(model, params, gpu_indices):
         num_stack=params['num_stack'], num_skip=params['num_skip'],
         sort_utt=True, sort_stop_epoch=params['sort_stop_epoch'],
         num_gpu=len(gpu_indices), dataset_root=params["dataset_root"],
-        json_file_path=params["train_json"], params=params)
+        json_file_path=params["train_json"], label_dict_file=params["label_dict_file"],
+        params=params)
     # Load dev dataset
     dev_data = Dataset(
         data_type='dev', train_data_size=params['train_data_size'],
         label_type=params['label_type'],
         batch_size=params['batch_size'], splice=params['splice'],
         num_stack=params['num_stack'], num_skip=params['num_skip'],
-        shuffle=True, num_gpu=len(gpu_indices), json_file_path=params["dev_json"])
+        shuffle=True, num_gpu=len(gpu_indices), json_file_path=params["dev_json"],
+        label_dict_file=params["label_dict_file"])
 
 
     # Tell TensorFlow that the model will be built into the default graph
@@ -335,7 +337,7 @@ def do_train(model, params, gpu_indices):
                 sess.run(train_op, feed_dict=feed_dict_train)
 
                 if (step + 1) % int(params['print_step'] / len(gpu_indices)) == 0:
-                    import pdb;pdb.set_trace()
+                    # import pdb;pdb.set_trace()
                     # Create feed dictionary for next mini batch (dev)
                     inputs, labels, inputs_seq_len, _ = dev_data.next()[0]
                     feed_dict_dev = {}
@@ -360,19 +362,22 @@ def do_train(model, params, gpu_indices):
                         feed_dict_train[model.keep_prob_pl_list[i_gpu]] = 1.0
 
                     # Compute accuracy & update event files
-                    ler_train, summary_str_train = sess.run(
-                        [ler_op, summary_train], feed_dict=feed_dict_train)
-                    ler_dev, summary_str_dev = sess.run(
-                        [ler_op, summary_dev], feed_dict=feed_dict_dev)
-                    csv_ler_train.append(ler_train)
-                    csv_ler_dev.append(ler_dev)
-                    summary_writer.add_summary(summary_str_train, step + 1)
-                    summary_writer.add_summary(summary_str_dev, step + 1)
+                    # ler_train, summary_str_train = sess.run(
+                    #     [ler_op, summary_train], feed_dict=feed_dict_train)
+                    # ler_dev, summary_str_dev = sess.run(
+                    #     [ler_op, summary_dev], feed_dict=feed_dict_dev)
+                    # csv_ler_train.append(ler_train)
+                    # csv_ler_dev.append(ler_dev)
+                    # summary_writer.add_summary(summary_str_train, step + 1)
+                    # summary_writer.add_summary(summary_str_dev, step + 1)
                     summary_writer.flush()
 
                     duration_step = time.time() - start_time_step
-                    print("Step %d (epoch: %.3f): loss = %.3f (%.3f) / ler = %.3f (%.3f) / lr = %.5f (%.3f min)" %
-                          (step + 1, train_data.epoch_detail, loss_train, loss_dev, ler_train, ler_dev,
+                    # print("Step %d (epoch: %.3f): loss = %.3f (%.3f) / ler = %.3f (%.3f) / lr = %.5f (%.3f min)" %
+                    #       (step + 1, train_data.epoch_detail, loss_train, loss_dev, ler_train, ler_dev,
+                    #        learning_rate, duration_step / 60))
+                    print("Step %d (epoch: %.3f): loss = %.3f (%.3f) / lr = %.5f (%.3f min)" %
+                          (step + 1, train_data.epoch_detail, loss_train, loss_dev,
                            learning_rate, duration_step / 60))
                     sys.stdout.flush()
                     start_time_step = time.time()
@@ -612,7 +617,7 @@ def main(config_path, model_save_path, gpu_indices):
 
 
 if __name__ == '__main__':
-    import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
     args = sys.argv
     if len(args) != 3 and len(args) != 4:
         raise ValueError

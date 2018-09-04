@@ -32,7 +32,7 @@ class Dataset(DatasetBase):
                  num_stack=1, num_skip=1,
                  shuffle=False, sort_utt=False, sort_stop_epoch=None,
                  progressbar=False, num_gpu=1,
-                 dataset_root="", json_file_path="", params=""):
+                 dataset_root="", json_file_path="", label_dict_file="", params=""):
         """A class for loading dataset.
         Args:
             data_type (stirng): train or dev_clean or dev_other or
@@ -84,7 +84,7 @@ class Dataset(DatasetBase):
             self.input_paths.append(dic.get("key"))
             self.target_labels.append(dic.get("text"))
             self.durations.append(dic.get("duration"))
-        for j in open("/mnt/cephfs2/asr/users/fanlu/data/aishell_label_dict.txt").readlines():
+        for j in open(label_dict_file).readlines():
             self.label_dict = {v: k for k, v in enumerate(j.strip().split())}
 
         self.rest = set(range(0, len(self.input_paths), 1))

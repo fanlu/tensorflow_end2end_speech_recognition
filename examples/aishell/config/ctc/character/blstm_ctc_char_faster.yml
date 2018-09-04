@@ -1,10 +1,11 @@
 param:
   # corpus
   corpus: aishell
-  dataset_root: ~/Downloads/data_aishell/
-  train_json: /mnt/cephfs2/asr/users/fanlu/data/aishell_train.json
-  dev_json: /mnt/cephfs2/asr/users/fanlu/data/aishell_validation2.json
-  test_json: /mnt/cephfs2/asr/users/fanlu/data/aishell_test.json
+  dataset_root: /Users/fanlu/Downloads/data_aishell/
+  train_json: /Users/fanlu/Downloads/aishell_train.json
+  dev_json: /Users/fanlu/Downloads/aishell_validation2.json
+  test_json: /Users/fanlu/Downloads/aishell_test.json
+  label_dict_file: /Users/fanlu/Downloads/aishell_label_dict.txt
   # fbank mfcc
   feature_type: fbank
   # the number of frequency channels

@@ -171,7 +171,7 @@ class DatasetBase(Base):
         #import pdb;pdb.set_trace()
         # Set values of each data in mini-batch
         for i_batch in range(len(data_indices)):
-            print(i_batch,input_names[i_batch])
+            # print(i_batch,input_names[i_batch])
             data_i = input_list[i_batch]
             frame_num, input_size = data_i.shape
 
