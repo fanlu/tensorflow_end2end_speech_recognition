@@ -24,5 +24,5 @@ def count_total_parameters(variables):
         for dim in shape:
             variable_parameters *= dim.value
         total_parameters += variable_parameters
-        parameters_dict[variable.name] = variable_parameters
+        parameters_dict[variable.name] = shape
     return parameters_dict, total_parameters

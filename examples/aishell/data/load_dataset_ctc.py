@@ -77,15 +77,19 @@ class Dataset(DatasetBase):
         self.padded_value = -1 if not self.is_test else None
         self.input_paths = []
         self.target_labels = []
+        self.target_label_indexes = []
         self.durations = []
         self.label_dict = {}
+        
+        for j in open(label_dict_file).readlines():
+            self.label_dict = {v: k for k, v in enumerate(j.strip().split())}
         for i in open(json_file_path).readlines():
             dic = json.loads(i)
             self.input_paths.append(dic.get("key"))
             self.target_labels.append(dic.get("text"))
+            self.target_label_indexes.append(" ".join([str(self.label_dict.get(i)) for i in dic.get("text").strip().split()]))
             self.durations.append(dic.get("duration"))
-        for j in open(label_dict_file).readlines():
-            self.label_dict = {v: k for k, v in enumerate(j.strip().split())}
+        
 
         self.rest = set(range(0, len(self.input_paths), 1))
 
