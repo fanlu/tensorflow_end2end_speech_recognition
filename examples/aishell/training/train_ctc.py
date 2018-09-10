@@ -349,10 +349,7 @@ def do_train(model, params, gpu_indices):
             not_improved_epoch = 0
             learning_rate = float(params['learning_rate'])
 
-            from tensorflow.python.client import timeline
-            options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-            run_metadata = tf.RunMetadata()
-
+            # from tensorflow.python.client import timeline
             # for step, (data, is_new_epoch) in enumerate(train_data):
             for epoch in range(2):
                 sess.run(batched_iter.initializer)
@@ -378,18 +375,26 @@ def do_train(model, params, gpu_indices):
                             feed_dict_train[model.keep_prob_pl_list[i_gpu]
                                             ] = 1 - float(params['dropout'])
                         feed_dict_train[learning_rate_pl] = learning_rate
-
-                        # Update parameters
-                        _, loss_train = sess.run([train_op, loss_op], feed_dict=feed_dict_train,
+                        if step % 10 != 0:
+                            sess.run(train_op, feed_dict=feed_dict_train)
+                        else:
+                            # Update parameters
+                            options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                            run_metadata = tf.RunMetadata()
+                            _, loss_train, summary_str_train = sess.run([train_op, loss_op, summary_train], 
+                                                feed_dict=feed_dict_train,
                                                 options=options, run_metadata=run_metadata)
-                        duration_step = time.time() - start_time_step
-                        print("epoch: %s, step: %s, loss_train: %s, duration: %s" %
-                              (epoch, step, loss_train, duration_step))
+                            summary_writer.add_run_metadata(run_metadata, 'step%d' % step)
+                            summary_writer.add_summary(summary_str_train, step)
+                            duration_step = time.time() - start_time_step
+                            print("epoch: %s, step: %s, loss_train: %s, duration: %s" %
+                                (epoch, step, loss_train, duration_step))
                         step += 1
                         start_time_step = time.time()
-                        fetched_timeline = timeline.Timeline(run_metadata.step_stats)
-                        with open(join(model.save_path, 'timeline_01.json'), 'w') as f:
-                            f.write(chrome_trace)
+                        # fetched_timeline = timeline.Timeline(run_metadata.step_stats)
+                        # chrome_trace = fetched_timeline.generate_chrome_trace_format()
+                        # with open(join(model.save_path, 'timeline_%s.json' % step), 'w') as f:
+                        #     f.write(chrome_trace)
                     except tf.errors.OutOfRangeError:
                         break
 
