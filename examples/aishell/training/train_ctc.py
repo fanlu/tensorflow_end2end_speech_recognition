@@ -29,6 +29,7 @@ import tensorflow as tf
 import collections
 import soundfile
 import numpy as np
+import multiprocessing
 from python_speech_features import delta, fbank
 
 
@@ -114,7 +115,7 @@ def get_iterator2(
                 0,
                 "",
                 0.,
-                0))  # tgt_len -- unused
+                -1))  # tgt_len -- unused
 
     def key_func(unused_1, src_len, filename, duration, label):
         # Calculate bucket_width by maximum source sequence length.
@@ -155,7 +156,7 @@ def get_iterator2(
         label=label)
 
 def dense_to_sparse(dense_tensor):
-    indices = tf.where(tf.not_equal(dense_tensor, tf.constant(0, dense_tensor.dtype)))
+    indices = tf.where(tf.not_equal(dense_tensor, tf.constant(-1, dense_tensor.dtype)))
     values = tf.gather_nd(dense_tensor, indices)
     shape = tf.shape(dense_tensor, out_type=np.int64)
     return tf.SparseTensor(indices, values, shape)
@@ -197,8 +198,9 @@ def do_train(model, params, gpu_indices):
             train_data.durations, train_data.target_label_indexes))
         batched_iter = get_iterator2(train_dataset, None, None, None, params['batch_size'],
                                     None, None, random_seed=3,
-                                    num_buckets=16, output_buffer_size=params['batch_size'] * 2,
-                                    num_parallel_calls=4, num_shards=1, shard_index=0)
+                                    num_buckets=16, output_buffer_size=params['batch_size'] * 5,
+                                    num_parallel_calls=multiprocessing.cpu_count()/2, 
+                                    num_shards=1, shard_index=0)
         source = batched_iter.source
         source.set_shape([None, None, 120])
         src_seq_len = batched_iter.source_sequence_length
@@ -354,7 +356,7 @@ def do_train(model, params, gpu_indices):
                     try:
                         is_new_epoch = False
                         # data, is_new_epoch = train_data.next()
-                        # Create feed dictionary for next mini batch (train)
+                        # # Create feed dictionary for next mini batch (train)
                         # inputs, labels, inputs_seq_len, _ = data
                         # labels3 = list2sparsetensor(labels[0], padded_value=train_data.padded_value)
                         # inputs2, labels2, inputs_seq_len2 = sess.run([sources_splits[0],
