@@ -140,7 +140,7 @@ def get_iterator2(
         tf.contrib.data.group_by_window(
             key_func=key_func, reduce_func=reduce_func, window_size=batch_size))
 
-    batched_dataset = batched_dataset.shuffle(output_buffer_size, random_seed)
+    # batched_dataset = batched_dataset.shuffle(output_buffer_size, random_seed)
 
     batched_iter = batched_dataset.make_initializable_iterator()
     (src_ids, src_seq_len, filename, duration, label) = (batched_iter.get_next())
@@ -199,7 +199,7 @@ def do_train(model, params, gpu_indices):
         batched_iter = get_iterator2(train_dataset, None, None, None, params['batch_size'],
                                     None, None, random_seed=3,
                                     num_buckets=16, output_buffer_size=params['batch_size'] * 5,
-                                    num_parallel_calls=multiprocessing.cpu_count()/2, 
+                                    num_parallel_calls=int(multiprocessing.cpu_count()/2), 
                                     num_shards=1, shard_index=0)
         source = batched_iter.source
         source.set_shape([None, None, 120])
@@ -348,6 +348,11 @@ def do_train(model, params, gpu_indices):
             ler_dev_best = 1
             not_improved_epoch = 0
             learning_rate = float(params['learning_rate'])
+
+            from tensorflow.python.client import timeline
+            options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+            run_metadata = tf.RunMetadata()
+
             # for step, (data, is_new_epoch) in enumerate(train_data):
             for epoch in range(2):
                 sess.run(batched_iter.initializer)
@@ -375,9 +380,16 @@ def do_train(model, params, gpu_indices):
                         feed_dict_train[learning_rate_pl] = learning_rate
 
                         # Update parameters
-                        _, loss_train = sess.run([train_op, loss_op], feed_dict=feed_dict_train)
-                        print("epoch: %s, step: %s, loss_train: %s" % (epoch, step, loss_train))
+                        _, loss_train = sess.run([train_op, loss_op], feed_dict=feed_dict_train,
+                                                options=options, run_metadata=run_metadata)
+                        duration_step = time.time() - start_time_step
+                        print("epoch: %s, step: %s, loss_train: %s, duration: %s" %
+                              (epoch, step, loss_train, duration_step))
                         step += 1
+                        start_time_step = time.time()
+                        fetched_timeline = timeline.Timeline(run_metadata.step_stats)
+                        with open(join(model.save_path, 'timeline_01.json'), 'w') as f:
+                            f.write(chrome_trace)
                     except tf.errors.OutOfRangeError:
                         break
 
